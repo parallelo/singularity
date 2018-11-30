@@ -21,6 +21,7 @@ import (
 	"github.com/sylabs/singularity/internal/pkg/build/types"
 	"github.com/sylabs/singularity/internal/pkg/libexec"
 	"github.com/sylabs/singularity/internal/pkg/util/nvidiautils"
+	"github.com/sylabs/singularity/internal/pkg/util/rocmutils"
 
 	ocitypes "github.com/containers/image/types"
 	"github.com/spf13/cobra"
@@ -399,6 +400,39 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 			if len(libs) == 0 {
 				sylog.Warningf("Could not find any NVIDIA libraries on this host!")
 				sylog.Warningf("You may need to edit %v/nvliblist.conf", buildcfg.SINGULARITY_CONFDIR)
+			} else {
+				ContainLibsPath = append(ContainLibsPath, libs...)
+			}
+		}
+	}
+
+	if !NoRocm && (Rocm || engineConfig.File.AlwaysUseRocm) {
+		userPath := os.Getenv("USER_PATH")
+
+		if engineConfig.File.AlwaysUseRocm {
+			sylog.Verbosef("'always use rocm = yes' found in singularity.conf")
+			sylog.Verbosef("binding rocm files into container")
+		}
+
+		libs, bins, err := rocmutils.GetRocmPath(buildcfg.SINGULARITY_CONFDIR, userPath)
+		if err != nil {
+			sylog.Infof("Unable to capture rocm bind points: %v", err)
+		} else {
+			if len(bins) == 0 {
+				sylog.Infof("Could not find any ROCm binaries on this host!")
+			} else {
+				if IsWritable {
+					sylog.Warningf("ROCm binaries may not be bound with --writable")
+				}
+				for _, binary := range bins {
+					usrBinBinary := filepath.Join("/usr/bin", filepath.Base(binary))
+					bind := strings.Join([]string{binary, usrBinBinary}, ":")
+					BindPaths = append(BindPaths, bind)
+				}
+			}
+			if len(libs) == 0 {
+				sylog.Warningf("Could not find any ROCm libraries on this host!")
+				sylog.Warningf("You may need to edit %v/rocmliblist.conf", buildcfg.SINGULARITY_CONFDIR)
 			} else {
 				ContainLibsPath = append(ContainLibsPath, libs...)
 			}

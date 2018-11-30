@@ -1017,6 +1017,26 @@ func (c *container) addDevMount(system *mount.System) error {
 				}
 			}
 		}
+		if c.engine.EngineConfig.GetRocm() {
+			files, err := ioutil.ReadDir("/dev")
+			if err != nil {
+				return fmt.Errorf("failed to read /dev directory: %s", err)
+			}
+			for _, file := range files {
+				if strings.HasPrefix(file.Name(), "kfd") {
+					if err := c.addSessionDev(filepath.Join("/dev", file.Name()), system); err != nil {
+						return err
+					}
+				}
+			}
+			for _, file := range files {
+				if strings.HasPrefix(file.Name(), "dri") {
+					if err := c.addSessionDev(filepath.Join("/dev", file.Name()), system); err != nil {
+						return err
+					}
+				}
+			}
+		}
 
 		if err := c.addSessionDev("/dev/fd", system); err != nil {
 			return err

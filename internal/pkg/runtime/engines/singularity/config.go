@@ -44,6 +44,7 @@ type FileConfig struct {
 	AllowContainerDir       bool     `default:"yes" authorized:"yes,no" directive:"allow container dir"`
 	AutofsBugPath           []string `directive:"autofs bug path"`
 	AlwaysUseNv             bool     `default:"no" authorized:"yes,no" directive:"always use nv"`
+	AlwaysUseRocm           bool     `default:"no" authorized:"yes,no" directive:"always use rocm"`
 	RootDefaultCapabilities string   `default:"full" authorized:"full,file,no" directive:"root default capabilities"`
 	MemoryFSType            string   `default:"tmpfs" authorized:"tmpfs,ramfs" directive:"memory fs type"`
 	CniConfPath             string   `directive:"cni configuration path"`
@@ -59,6 +60,7 @@ type JSONConfig struct {
 	OverlayImage  []string      `json:"overlayImage,omitempty"`
 	Contain       bool          `json:"container,omitempty"`
 	Nv            bool          `json:"nv,omitempty"`
+	Rocm          bool          `json:"rocm,omitempty"`
 	Workdir       string        `json:"workdir,omitempty"`
 	ScratchDir    []string      `json:"scratchdir,omitempty"`
 	HomeSource    string        `json:"homedir,omitempty"`
@@ -161,6 +163,16 @@ func (e *EngineConfig) SetNv(nv bool) {
 // GetNv returns if nv flag is set or not.
 func (e *EngineConfig) GetNv() bool {
 	return e.JSON.Nv
+}
+
+// SetRocm sets rocm flag to bind rocm libraries into containee.JSON.
+func (e *EngineConfig) SetRocm(rocm bool) {
+        e.JSON.Rocm = rocm
+}
+
+// GetRocm returns if rocm flag is set or not.
+func (e *EngineConfig) GetRocm() bool {
+        return e.JSON.Rocm
 }
 
 // SetWorkdir sets a work directory path.

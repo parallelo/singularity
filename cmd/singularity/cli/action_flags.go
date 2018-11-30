@@ -41,9 +41,11 @@ var (
 	IsWritable      bool
 	IsWritableTmpfs bool
 	Nvidia          bool
+	Rocm            bool
 	NoHome          bool
 	NoInit          bool
 	NoNvidia        bool
+	NoRocm          bool
 
 	NetNamespace  bool
 	UtsNamespace  bool
@@ -185,6 +187,10 @@ func initBoolVars() {
 	actionFlags.BoolVar(&Nvidia, "nv", false, "enable experimental Nvidia support")
 	actionFlags.SetAnnotation("nv", "envkey", []string{"NV"})
 
+	// --rocm
+	actionFlags.BoolVar(&Rocm, "rocm", false, "enable experimental Rocm support")
+	actionFlags.SetAnnotation("rocm", "envkey", []string{"ROCM"})
+
 	// -w|--writable
 	actionFlags.BoolVarP(&IsWritable, "writable", "w", false, "by default all Singularity containers are available as read only. This option makes the file system accessible as read/write.")
 	actionFlags.SetAnnotation("writable", "envkey", []string{"WRITABLE"})
@@ -210,6 +216,10 @@ func initBoolVars() {
 	actionFlags.Lookup("no-nv").Hidden = true
 	actionFlags.SetAnnotation("no-nv", "envkey", []string{"NV_OFF", "NO_NV"})
 
+	// hidden flag to disable rocm bindings when 'always use rocm = yes'
+	actionFlags.BoolVar(&NoRocm, "no-rocm", false, "")
+	actionFlags.Lookup("no-rocm").Hidden = true
+	actionFlags.SetAnnotation("no-rocm", "envkey", []string{"ROCM_OFF", "NO_ROCM"})
 }
 
 // initNamespaceVars initializes flags that take toggle namespace support
