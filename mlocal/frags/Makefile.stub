@@ -177,9 +177,9 @@ $(NVIDIA_liblist_INSTALL): $(NVIDIA_liblist)
 
 # install ROCm lib list config file
 $(ROCM_liblist_INSTALL): $(ROCM_liblist)
-        @echo " INSTALL" $@
-        $(V)install -d $(@D)
-        $(V)install -m 0644 $< $@
+	@echo " INSTALL" $@
+	$(V)install -d $(@D)
+	$(V)install -m 0644 $< $@
 
 # starter & starter-suid install
 $(starter_INSTALL): $(starter)
