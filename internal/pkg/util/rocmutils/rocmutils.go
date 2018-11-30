@@ -7,10 +7,12 @@ package rocmutils
 
 import (
 	"bufio"
+	"bytes"
 	"debug/elf"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -21,8 +23,39 @@ import (
 func rocmContainerCli() ([]string, error) {
 	var strArray []string
 
-	// fixme
+	// use rocm-container-cli (if present)
+	command, err := exec.LookPath("rocm-container-cli")
+	if err != nil {
+		return nil, fmt.Errorf("no rocm-container-cli present: %v", err)
+	}
 
+	cmd := exec.Command(command, "list", "--binaries", "--ipcs", "--libraries")
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("Unable to execute rocm-container-cli: %v", err)
+	}
+
+	reader := bytes.NewReader(out)
+	scanner := bufio.NewScanner(reader)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		if line != "" {
+			// if this is a library, then add a .so entry as well
+			if strings.Contains(line, ".so") {
+				fileName := filepath.Base(line)
+				strArray = append(strArray, fileName) // add entry to list to be bound
+
+				// strip off .xxx.xx prefix and add so entry as well
+				newentry := strings.SplitAfter(fileName, ".so")
+				strArray = append(strArray, newentry[0]) // add prefix (filepath.so)
+			} else {
+				// Assume we're a binary and need the full path
+				strArray = append(strArray, line)
+			}
+		}
+	}
 	return strArray, nil
 }
 
