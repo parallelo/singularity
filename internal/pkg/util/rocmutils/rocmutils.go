@@ -7,12 +7,10 @@ package rocmutils
 
 import (
 	"bufio"
-	"bytes"
 	"debug/elf"
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -21,7 +19,11 @@ import (
 
 // generate bind list using rocm-container-cli
 func rocmContainerCli() ([]string, error) {
-        // TODO
+	var strArray []string
+
+	// fixme
+
+	return strArray, nil
 }
 
 // generate bind list using contents of rocmliblist.conf

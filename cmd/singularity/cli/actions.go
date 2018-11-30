@@ -65,6 +65,7 @@ func init() {
 		cmd.Flags().AddFlag(actionFlags.Lookup("network-args"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("dns"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("nv"))
+		cmd.Flags().AddFlag(actionFlags.Lookup("rocm"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("overlay"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("pid"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("uts"))
@@ -88,6 +89,7 @@ func init() {
 		cmd.Flags().AddFlag(actionFlags.Lookup("app"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("containlibs"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("no-nv"))
+		cmd.Flags().AddFlag(actionFlags.Lookup("no-rocm"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("tmpdir"))
 		cmd.Flags().AddFlag(actionFlags.Lookup("nohttps"))
 		if cmd == ShellCmd {

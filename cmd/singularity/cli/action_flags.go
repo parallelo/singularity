@@ -41,11 +41,11 @@ var (
 	IsWritable      bool
 	IsWritableTmpfs bool
 	Nvidia          bool
-	Rocm            bool
 	NoHome          bool
 	NoInit          bool
 	NoNvidia        bool
 	NoRocm          bool
+	Rocm            bool
 
 	NetNamespace  bool
 	UtsNamespace  bool
