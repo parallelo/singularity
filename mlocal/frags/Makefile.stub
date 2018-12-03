@@ -41,6 +41,9 @@ bash_completion_INSTALL := $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/singularity
 NVIDIA_liblist := $(SOURCEDIR)/etc/nvliblist.conf
 NVIDIA_liblist_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/nvliblist.conf
 
+ROCM_liblist := $(SOURCEDIR)/etc/rocmliblist.conf
+ROCM_liblist_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/rocmliblist.conf
+
 cni_builddir := $(BUILDDIR_ABSPATH)/cni
 cni_install_DIR := $(DESTDIR)$(LIBEXECDIR)/singularity/cni
 cni_vendor_GOPATH := $(singularity_REPO)/vendor/github.com/containernetworking/plugins/plugins
@@ -96,7 +99,7 @@ actions_INSTALL := $(DESTDIR)$(SYSCONFDIR)/singularity/actions
 INSTALLFILES := $(singularity_INSTALL) $(starter_INSTALL) $(starter_suid_INSTALL) $(sessiondir) \
 	$(config_INSTALL) $(dist_bin_SCRIPTS_INSTALL) $(capability_JSON) $(syecl_config_INSTALL) \
 	$(bash_completion_INSTALL) $(actions_INSTALL) $(cni_plugins_INSTALL) $(cni_config_INSTALL) \
-	$(seccomp_profile_INSTALL) $(NVIDIA_liblist_INSTALL) $(cgroups_config_INSTALL) 
+	$(seccomp_profile_INSTALL) $(NVIDIA_liblist_INSTALL) $(ROCM_liblist_INSTALL) $(cgroups_config_INSTALL)
 
 CLEANFILES += $(libruntime) $(starter) $(singularity) $(go_BIN) $(go_OBJ) $(bash_completion) \
 	$(cni_plugins_EXECUTABLES)
@@ -168,6 +171,12 @@ $(bash_completion_INSTALL): $(bash_completion)
 
 # install NVIDIA lib list config file
 $(NVIDIA_liblist_INSTALL): $(NVIDIA_liblist)
+	@echo " INSTALL" $@
+	$(V)install -d $(@D)
+	$(V)install -m 0644 $< $@
+
+# install ROCm lib list config file
+$(ROCM_liblist_INSTALL): $(ROCM_liblist)
 	@echo " INSTALL" $@
 	$(V)install -d $(@D)
 	$(V)install -m 0644 $< $@
