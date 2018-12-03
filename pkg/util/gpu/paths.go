@@ -3,7 +3,7 @@
 // LICENSE.md file distributed with the sources of this project regarding your
 // rights to use or distribute this software.
 
-package nvidia
+package gpu
 
 import (
 	"bufio"
@@ -19,9 +19,9 @@ import (
 	"github.com/sylabs/singularity/internal/pkg/sylog"
 )
 
-// nvidiaContainerCli runs `nvidia-container-cli list` and returns list of
+// gpuContainerCli runs `nvidia-container-cli list` and returns list of
 // libraries, ipcs and binaries for proper NVIDIA work. This may return duplicates!
-func nvidiaContainerCli() ([]string, error) {
+func gpuContainerCli() ([]string, error) {
 	nvidiaCLIPath, err := exec.LookPath("nvidia-container-cli")
 	if err != nil {
 		return nil, fmt.Errorf("could not find nvidia-container-cli: %v", err)
@@ -59,12 +59,12 @@ func nvidiaContainerCli() ([]string, error) {
 	return libs, nil
 }
 
-// nvliblist returns libraries listed in nvliblist.conf which is located in nvidiaDir.
-func nvliblist(nvidiaDir string) ([]string, error) {
-	nvliblistPath := filepath.Join(nvidiaDir, "nvliblist.conf")
-	file, err := os.Open(nvliblistPath)
+// gpuliblist returns libraries listed in [nv,rocm]liblist.conf which is located in gpuDir.
+func gpuliblist(gpuDir string, filename string) ([]string, error) {
+	gpuliblistPath := filepath.Join(gpuDir, filename)
+	file, err := os.Open(gpuliblistPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open %s: %v", nvliblistPath, err)
+		return nil, fmt.Errorf("could not open %s: %v", gpuliblistPath, err)
 	}
 	defer file.Close()
 
@@ -79,29 +79,29 @@ func nvliblist(nvidiaDir string) ([]string, error) {
 	return libs, nil
 }
 
-// Paths returns list of nvidia libraries and binaries that should
-// be added to mounted into container if it needs NVIDIA GPUs.
-func Paths(nvidiaDir string, envPath string) ([]string, []string, error) {
+// Paths returns list of gpu libraries and binaries that should
+// be added to mounted into container if it needs GPUs.
+func Paths(gpuDir string, envPath string, gpu GpuCfg) ([]string, []string, error) {
 	if envPath != "" {
 		oldPath := os.Getenv("PATH")
 		os.Setenv("PATH", envPath)
 		defer os.Setenv("PATH", oldPath)
 	}
 
-	var nvidiaFiles []string
-	nvidiaFiles, err := nvidiaContainerCli()
+	var gpuFiles []string
+	gpuFiles, err := gpuContainerCli()
 	if err != nil {
-		sylog.Verbosef("nvidiaContainerCli returned: %v", err)
-		sylog.Verbosef("Falling back to nvliblist.conf")
+		sylog.Verbosef("gpuContainerCli returned: %v", err)
+		sylog.Verbosef("Falling back to %s", gpu.File)
 
-		nvidiaFiles, err = nvliblist(nvidiaDir)
+		gpuFiles, err = gpuliblist(gpuDir)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not read nvliblist.conf: %v", err)
+			return nil, nil, fmt.Errorf("could not read %s: %v", gpu.File, err)
 		}
 	}
 
 	// walk through the ldconfig output and add entries which contain the filenames
-	// returned by nvidia-container-cli OR the nvliblist.conf file contents
+	// returned by gpuContainerCli OR the gpuliblist file contents
 	out, err := exec.Command("ldconfig", "-p").Output()
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not execute ldconfig: %v", err)
@@ -143,11 +143,11 @@ func Paths(nvidiaDir string, envPath string) ([]string, []string, error) {
 
 	var libraries []string
 	var binaries []string
-	for _, nvidiaFile := range nvidiaFiles {
+	for _, gpuFile := range gpuFiles {
 		// if the file contains a ".so", treat it as a library
-		if strings.Contains(nvidiaFile, ".so") {
+		if strings.Contains(gpuFile, ".so") {
 			for libPath, libName := range ldCache {
-				if !strings.HasPrefix(libName, nvidiaFile) {
+				if !strings.HasPrefix(libName, gpuFile) {
 					continue
 				}
 				if _, ok := libs[libName]; !ok {
@@ -170,7 +170,7 @@ func Paths(nvidiaDir string, envPath string) ([]string, []string, error) {
 		} else {
 			// treat the file as a binary file - add it to the bind list
 			// no need to check the ldconfig output
-			binary, err := exec.LookPath(nvidiaFile)
+			binary, err := exec.LookPath(gpuFile)
 			if err != nil {
 				continue
 			}

@@ -30,7 +30,7 @@ import (
 	"github.com/sylabs/singularity/pkg/network"
 	"github.com/sylabs/singularity/pkg/util/fs/proc"
 	"github.com/sylabs/singularity/pkg/util/loop"
-	"github.com/sylabs/singularity/pkg/util/nvidia"
+	"github.com/sylabs/singularity/pkg/util/gpu"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -1055,13 +1055,24 @@ func (c *container) addDevMount(system *mount.System) error {
 			return err
 		}
 		if c.engine.EngineConfig.GetNv() {
-			devs, err := nvidia.Devices(true)
+			devs, err := gpu.NvDevices(true)
 			if err != nil {
 				return fmt.Errorf("failed to get nvidia devices: %v", err)
 			}
 			for _, dev := range devs {
 				if err := c.addSessionDev(dev, system); err != nil {
 					return err
+				}
+			}
+		}
+		if c.engine.EngineConfig.GetRocm() {
+			devs, err := gpu.RocmDevices(true)
+			if err != nil {
+				return fmt.Errorf("failed to get rocm devices: %v", err)
+			}
+			for _, dev := range devs {
+				if err := c.addSessionDev(dev, system); err != nil {
+                                        return err
 				}
 			}
 		}
