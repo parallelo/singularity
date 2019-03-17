@@ -188,7 +188,7 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		engineConfig.SetImage(abspath)
 	}
 
-	var gpu gpuutils.GpuCfg
+	var gpu gpu.Cfg
 	if !NoNvidia && (Nvidia || engineConfig.File.AlwaysUseNv) {
 		gpu.Platform = "NVIDIA"
 		gpu.File = "nvliblist.conf"

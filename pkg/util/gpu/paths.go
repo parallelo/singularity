@@ -19,6 +19,11 @@ import (
 	"github.com/sylabs/singularity/internal/pkg/sylog"
 )
 
+type Cfg struct {
+	Platform	string
+	File		string
+}
+
 // gpuContainerCli runs `nvidia-container-cli list` and returns list of
 // libraries, ipcs and binaries for proper NVIDIA work. This may return duplicates!
 func gpuContainerCli() ([]string, error) {
