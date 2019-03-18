@@ -188,34 +188,34 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 		engineConfig.SetImage(abspath)
 	}
 
-	var gpu gpu.Cfg
+	var gpucfg gpu.Cfg
 	if !NoNvidia && (Nvidia || engineConfig.File.AlwaysUseNv) {
-		gpu.Platform = "NVIDIA"
-		gpu.File = "nvliblist.conf"
+		gpucfg.Platform = "NVIDIA"
+		gpucfg.File = "nvliblist.conf"
 		if engineConfig.File.AlwaysUseNv {
 			sylog.Verbosef("'always use nv = yes' found in singularity.conf")
 			sylog.Verbosef("binding nvidia files into container")
 		}
 	} else if !NoRocm && (Rocm || engineConfig.File.AlwaysUseRocm) {
-		gpu.Platform = "ROCm"
-		gpu.File = "rocmliblist.conf"
+		gpucfg.Platform = "ROCm"
+		gpucfg.File = "rocmliblist.conf"
 		if engineConfig.File.AlwaysUseRocm {
 			sylog.Verbosef("'always use rocm = yes' found in singularity.conf")
 			sylog.Verbosef("binding rocm files into container")
 		}
 	}
-	if gpu.Platform == "NVIDIA" || gpu.Platform == "ROCm" {
+	if gpucfg.Platform == "NVIDIA" || gpucfg.Platform == "ROCm" {
 		userPath := os.Getenv("USER_PATH")
 
-		libs, bins, err := gpu.Paths(buildcfg.SINGULARITY_CONFDIR, userPath, gpu)
+		libs, bins, err := gpu.Paths(buildcfg.SINGULARITY_CONFDIR, userPath, gpucfg.File)
 		if err != nil {
-			sylog.Warningf("Unable to capture %s bind points: %v", gpu.Platform, err)
+			sylog.Warningf("Unable to capture %s bind points: %v", gpucfg.Platform, err)
 		} else {
 			if len(bins) == 0 {
-				sylog.Infof("Could not find any %s binaries on this host!", gpu.Platform)
+				sylog.Infof("Could not find any %s binaries on this host!", gpucfg.Platform)
 			} else {
 				if IsWritable {
-					sylog.Warningf("%s binaries may not be bound with --writable", gpu.Platform)
+					sylog.Warningf("%s binaries may not be bound with --writable", gpucfg.Platform)
 				}
 				for _, binary := range bins {
 					usrBinBinary := filepath.Join("/usr/bin", filepath.Base(binary))
@@ -224,8 +224,8 @@ func execStarter(cobraCmd *cobra.Command, image string, args []string, name stri
 				}
 			}
 			if len(libs) == 0 {
-				sylog.Warningf("Could not find any %s libraries on this host!", gpu.Platform)
-				sylog.Warningf("You may need to edit %v/%s", buildcfg.SINGULARITY_CONFDIR, gpu.File)
+				sylog.Warningf("Could not find any %s libraries on this host!", gpucfg.Platform)
+				sylog.Warningf("You may need to edit %v/%s", buildcfg.SINGULARITY_CONFDIR, gpucfg.File)
 			} else {
 				ContainLibsPath = append(ContainLibsPath, libs...)
 			}

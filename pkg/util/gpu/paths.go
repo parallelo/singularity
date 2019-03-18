@@ -86,7 +86,7 @@ func gpuliblist(gpuDir string, filename string) ([]string, error) {
 
 // Paths returns list of gpu libraries and binaries that should
 // be added to mounted into container if it needs GPUs.
-func Paths(gpuDir string, envPath string, gpu GpuCfg) ([]string, []string, error) {
+func Paths(gpuDir string, envPath string, confFile string) ([]string, []string, error) {
 	if envPath != "" {
 		oldPath := os.Getenv("PATH")
 		os.Setenv("PATH", envPath)
@@ -97,11 +97,11 @@ func Paths(gpuDir string, envPath string, gpu GpuCfg) ([]string, []string, error
 	gpuFiles, err := gpuContainerCli()
 	if err != nil {
 		sylog.Verbosef("gpuContainerCli returned: %v", err)
-		sylog.Verbosef("Falling back to %s", gpu.File)
+		sylog.Verbosef("Falling back to %s", confFile)
 
-		gpuFiles, err = gpuliblist(gpuDir)
+		gpuFiles, err = gpuliblist(gpuDir, confFile)
 		if err != nil {
-			return nil, nil, fmt.Errorf("could not read %s: %v", gpu.File, err)
+			return nil, nil, fmt.Errorf("could not read %s: %v", confFile, err)
 		}
 	}
 
