@@ -38,6 +38,7 @@ type startOpts struct {
 	noHome        bool
 	noPrivs       bool
 	nv            bool
+	rocm          bool
 	userns        bool
 	uts           bool
 	writable      bool
@@ -143,6 +144,9 @@ func startInstance(image string, instance string, portOffset int, opts startOpts
 	}
 	if opts.overlay != "" {
 		args = append(args, "--overlay", opts.overlay)
+	}
+	if opts.rocm {
+		args = append(args, "--rocm")
 	}
 	if opts.scratch != "" {
 		args = append(args, "--scratch", opts.scratch)
